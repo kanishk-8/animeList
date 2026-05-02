@@ -94,9 +94,11 @@ Item {
 
                         Column {
                             anchors.centerIn: parent
+                            width: parent.width
                             spacing: 2
 
                             StyledText {
+                                width: parent.width
                                 text: Qt.formatDate(modelData, "ddd")
                                 font.pixelSize: Theme.fontSizeSmall
                                 horizontalAlignment: Text.AlignHCenter
@@ -104,6 +106,7 @@ Item {
                             }
 
                             StyledText {
+                                width: parent.width
                                 text: Qt.formatDate(modelData, "d")
                                 font.pixelSize: Theme.fontSizeMedium
                                 font.weight: Font.Medium

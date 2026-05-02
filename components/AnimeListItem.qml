@@ -22,6 +22,8 @@ Rectangle {
     color: mouseArea.containsMouse ? Theme.surfaceContainerHigh : "transparent"
     radius: Theme.cornerRadius
 
+    property real infoWidth: Math.max(0, root.width - (Theme.spacingS * 2 + Theme.spacingM * 3 + 48 + 32 + 80))
+
     RowLayout {
         anchors.fill: parent
         anchors.margins: Theme.spacingS
@@ -29,9 +31,9 @@ Rectangle {
 
         // Anime thumbnail
         Rectangle {
-            Layout.preferredWidth: 48
-            Layout.preferredHeight: 56
-            radius: Theme.cornerRadiusSmall
+            Layout.preferredWidth: 56
+            Layout.preferredHeight: 64
+            radius: Theme.cornerRadius
             color: Theme.surfaceContainerHighest
             clip: true
 
@@ -63,7 +65,8 @@ Rectangle {
 
         // Info column
         ColumnLayout {
-            Layout.fillWidth: true
+            Layout.preferredWidth: root.infoWidth
+            Layout.maximumWidth: root.infoWidth
             Layout.fillHeight: true
             spacing: 2
 
@@ -127,10 +130,10 @@ Rectangle {
 
             Rectangle {
                 Layout.alignment: Qt.AlignRight
-                Layout.preferredWidth: timeUntilText.width + Theme.spacingM
-                Layout.preferredHeight: timeUntilText.height + Theme.spacingXS
-                radius: Theme.cornerRadiusSmall
-                color: root.timeUntil === "Aired" ? Theme.surfaceContainerHighest : Theme.primaryContainer
+                Layout.preferredWidth: timeUntilText.width + Theme.spacingL
+                Layout.preferredHeight: 24
+                radius: height / 2
+                color: root.timeUntil === "Aired" ? Theme.surfaceContainerHighest : Theme.primary
                 visible: root.timeUntil !== ""
 
                 StyledText {
@@ -139,7 +142,7 @@ Rectangle {
                     text: root.timeUntil
                     font.pixelSize: Theme.fontSizeSmall
                     font.weight: Font.Medium
-                    color: root.timeUntil === "Aired" ? Theme.surfaceVariantText : Theme.onPrimaryContainer
+                    color: root.timeUntil === "Aired" ? Theme.surfaceText : Theme.onPrimary
                 }
             }
         }

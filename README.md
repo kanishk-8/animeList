@@ -4,9 +4,11 @@ A QuickShell plugin for DankMaterialShell that tracks anime episode releases and
 
 ## Features
 
-- **Season Overview** - Browse all anime airing this season
+- **Weekly Calendar Strip** - Filter the season list by day using a week view
+- **Season Overview** - Browse anime airing this season with time-left badges
+- **Search Tab** - Search and filter the season list
+- **MyList Tab** - Split view for **Today** and **All** watchlist anime
 - **Watchlist Management** - Add/remove anime to your personal watchlist
-- **Today's Schedule** - See which watchlist anime are airing today
 - **Desktop Notifications** - Get notified when episodes air
     - Instant notifications when an episode starts
     - Daily digest summary of today's episodes
@@ -17,11 +19,15 @@ A QuickShell plugin for DankMaterialShell that tracks anime episode releases and
 
 ### Season Tab
 
-![Season Tab](screenshots/season-tab.png)
+![Season Tab](screenshots/seasontab.png)
 
-### Today Tab
+### MyList Tab
 
-![Today Tab](screenshots/today-tab.png)
+![MyList Tab](screenshots/mylisttab.png)
+
+### Search Tab
+
+![Search Tab](screenshots/searchtab.png)
 
 ### Settings
 
@@ -77,10 +83,10 @@ A QuickShell plugin for DankMaterialShell that tracks anime episode releases and
 
 ## Usage
 
-1. **Browse Season Tab** - See all anime airing this season
+1. **Browse Season Tab** - Use the calendar strip to pick a day and see what airs
 2. **Add to Watchlist** - Click the star icon on any anime to add it to your watchlist
-3. **Check Today Tab** - View your watchlist anime airing today
-4. **Toggle View** - Switch between "Watchlist" (today only) and "All" (full watchlist)
+3. **Search Tab** - Search and filter the season list
+4. **MyList Tab** - Switch between **Today** and **All** in your watchlist
 5. **Receive Notifications** - Get notified when your anime airs
 
 ## File Structure
@@ -90,8 +96,9 @@ AnimeList/
 ├── Widget.qml           # Main plugin component
 ├── Settings.qml         # Plugin settings UI
 ├── components/
-│   ├── SeasonTab.qml    # Season overview tab
-│   ├── TodayTab.qml     # Today's anime tab
+│   ├── SeasonTab.qml    # Season overview with weekly calendar strip
+│   ├── SearchTab.qml    # Search and filter
+│   ├── TodayTab.qml     # MyList (Today/All) tab
 │   ├── AnimeListItem.qml # Anime list item component
 │   └── LoadingState.qml  # Loading indicator
 ├── services/

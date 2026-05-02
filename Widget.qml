@@ -251,6 +251,6 @@ PluginComponent {
         }
     }
 
-    popoutWidth: 520
+    popoutWidth: 560
     popoutHeight: 560
 }
