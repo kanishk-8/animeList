@@ -147,7 +147,7 @@ PluginComponent {
         PopoutComponent {
             id: popoutColumn
 
-            headerText: "Anime Calendar"
+            headerText: "Anime List"
             detailsText: ""
             showCloseButton: true
 

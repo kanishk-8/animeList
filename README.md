@@ -1,4 +1,4 @@
-# Anime Calendar Plugin
+# Anime List Plugin
 
 A QuickShell plugin for DankMaterialShell that tracks anime episode releases and sends notifications when your favorite shows air.
 
@@ -8,20 +8,23 @@ A QuickShell plugin for DankMaterialShell that tracks anime episode releases and
 - **Watchlist Management** - Add/remove anime to your personal watchlist
 - **Today's Schedule** - See which watchlist anime are airing today
 - **Desktop Notifications** - Get notified when episodes air
-  - Instant notifications when an episode starts
-  - Daily digest summary of today's episodes
+    - Instant notifications when an episode starts
+    - Daily digest summary of today's episodes
 - **Customizable Bar Indicator** - Choose between icon only, icon + count, or icon + countdown
 - **Custom Notification Icon** - Use your own icon for notifications
 
 ## Screenshots
 
 ### Season Tab
+
 ![Season Tab](screenshots/season-tab.png)
 
 ### Today Tab
+
 ![Today Tab](screenshots/today-tab.png)
 
 ### Settings
+
 ![Settings](screenshots/settings.png)
 
 ## Requirements
@@ -34,9 +37,10 @@ A QuickShell plugin for DankMaterialShell that tracks anime episode releases and
 ## Installation
 
 1. Clone or copy this plugin to your DankMaterialShell plugins directory:
-   ```
-   ~/.config/DankMaterialShell/plugins/AnimeCalendar/
-   ```
+
+    ```
+    ~/.config/DankMaterialShell/plugins/AnimeList/
+    ```
 
 2. Enable the plugin in DankMaterialShell settings
 
@@ -45,26 +49,30 @@ A QuickShell plugin for DankMaterialShell that tracks anime episode releases and
 ## Configuration
 
 ### API Configuration
-| Setting | Description |
-|---------|-------------|
+
+| Setting   | Description                      |
+| --------- | -------------------------------- |
 | API Token | Your animeschedule.net API token |
 
 ### Display Settings
-| Setting | Description |
-|---------|-------------|
+
+| Setting       | Description                                                             |
+| ------------- | ----------------------------------------------------------------------- |
 | Bar Indicator | How to display in the bar: Icon Only, Icon + Count, or Icon + Countdown |
 
 ### Notifications
-| Setting | Description |
-|---------|-------------|
+
+| Setting               | Description                                  |
+| --------------------- | -------------------------------------------- |
 | Instant Notifications | Notify when episodes from your watchlist air |
-| Daily Digest | Morning summary of today's episodes |
-| Digest Time | Time for daily digest (HH:MM format) |
-| Notification Icon | Icon name or path for notifications |
+| Daily Digest          | Morning summary of today's episodes          |
+| Digest Time           | Time for daily digest (HH:MM format)         |
+| Notification Icon     | Icon name or path for notifications          |
 
 ### Data Settings
-| Setting | Description |
-|---------|-------------|
+
+| Setting          | Description                                    |
+| ---------------- | ---------------------------------------------- |
 | Refresh Interval | How often to check for new episodes (5-60 min) |
 
 ## Usage
@@ -78,7 +86,7 @@ A QuickShell plugin for DankMaterialShell that tracks anime episode releases and
 ## File Structure
 
 ```
-AnimeCalendar/
+AnimeList/
 ├── Widget.qml           # Main plugin component
 ├── Settings.qml         # Plugin settings UI
 ├── components/
@@ -95,6 +103,7 @@ AnimeCalendar/
 ## Watchlist Storage
 
 Your watchlist is stored locally at:
+
 ```
 ~/.config/quickshell/anime-watchlist.json
 ```

@@ -7,11 +7,11 @@ import "./services" as Services
 
 PluginSettings {
     id: root
-    pluginId: "animeCalendar"
+    pluginId: "animeList"
 
     StyledText {
         width: parent.width
-        text: "Anime Calendar"
+        text: "Anime List"
         font.pixelSize: Theme.fontSizeLarge
         font.weight: Font.Bold
         color: Theme.surfaceText
@@ -90,7 +90,7 @@ PluginSettings {
         ]
         defaultValue: "icon_count"
     }
-  
+
     Rectangle {
         width: parent.width
         height: 1
