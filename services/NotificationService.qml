@@ -46,6 +46,11 @@ Singleton {
         notificationSent(title, body);
     }
 
+    function getPreferredTitle(anime) {
+        if (!anime) return "Unknown";
+        return anime.english || anime.romaji || anime.route || "Unknown";
+    }
+
     // Digest notification logic
     function checkDigestTime() {
         var now = new Date();
@@ -72,7 +77,7 @@ Singleton {
             var list = animeService.watchlistTodayAnime;
             var titles = [];
             for (var i = 0; i < Math.min(list.length, 3); i++) {
-                titles.push(list[i].title || list[i].route);
+                titles.push(getPreferredTitle(list[i]));
             }
             var msg = count + " anime today: " + titles.join(", ");
             if (count > 3) msg += "...";
@@ -135,7 +140,7 @@ Singleton {
             if (diff <= 120000 && !notifiedAnime[key]) {
                 sendNotification(
                     "Anime Airing Now!",
-                    (anime.title || anime.route) + " - Episode " + (anime.episodeNumber || "?")
+                    getPreferredTitle(anime) + " - Episode " + (anime.episodeNumber || "?")
                 );
                 notifiedAnime[key] = true;
             }
