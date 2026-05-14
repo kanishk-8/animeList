@@ -180,7 +180,7 @@ PluginComponent {
 
                             Repeater {
                                 id: tabRepeater
-                                model: ["Season", "MyList", "Search"]
+                                model: ["MyList", "Season", "Search"]
 
                                 Rectangle{
                                     id: tabPill
@@ -237,10 +237,10 @@ PluginComponent {
                         height: parent.height - 41
                         currentIndex: 0
 
-                        AnimeCalendarComponents.SeasonTab {
+                        AnimeCalendarComponents.TodayTab {
                         }
 
-                        AnimeCalendarComponents.TodayTab {
+                        AnimeCalendarComponents.SeasonTab {
                         }
 
                         AnimeCalendarComponents.SearchTab {
