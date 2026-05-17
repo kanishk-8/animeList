@@ -10,8 +10,8 @@ Item {
     anchors.fill: parent
 
     property bool isLoading: Services.AnimeScheduleService.isLoading
-    property bool showAll: false
-    property var todayList: showAll ? root.allWatchlistAnime : Services.AnimeScheduleService.watchlistTodayAnime
+    property var selectedDate: new Date()
+    property var weekDates: []
 
     // All watchlist anime (not just today)
     property var allWatchlistAnime: {
@@ -28,110 +28,112 @@ Item {
         return result;
     }
 
+    // Filtered watchlist based on selected day
+    property var filteredList: {
+        let list = allWatchlistAnime || [];
+        if (!selectedDate) return list;
+
+        list = list.filter(anime => {
+            const airDate = Services.AnimeScheduleService.parseDate(anime.episodeDate);
+            return airDate && root.isSameDay(airDate, selectedDate);
+        });
+
+        return list;
+    }
+
+    function isSameDay(a, b) {
+        return a.getFullYear() === b.getFullYear() &&
+               a.getMonth() === b.getMonth() &&
+               a.getDate() === b.getDate();
+    }
+
+    function startOfWeek(date) {
+        const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        const day = d.getDay(); // 0=Sun
+        const diff = (day + 6) % 7; // Monday-start week
+        d.setDate(d.getDate() - diff);
+        return d;
+    }
+
+    function buildWeekDates(baseDate) {
+        const start = startOfWeek(baseDate);
+        const days = [];
+        for (let i = 0; i < 7; i++) {
+            const d = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+            d.setDate(start.getDate() + i);
+            days.push(d);
+        }
+        return days;
+    }
+
+    Component.onCompleted: {
+        weekDates = buildWeekDates(selectedDate);
+    }
+
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: Theme.spacingM
         spacing: Theme.spacingM
 
-        // Header with count and toggle
+        // Week Calendar Strip + Refresh
         RowLayout {
             Layout.fillWidth: true
             Layout.preferredHeight: 52
             spacing: Theme.spacingS
 
-            StyledText {
-                text: root.showAll ? "My List - All" : "My List - Today"
-                font.pixelSize: Theme.fontSizeMedium
-                font.weight: Font.Bold
-                color: Theme.surfaceText
-            }
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 52
+                spacing: Theme.spacingXS
 
-            Rectangle {
-                Layout.preferredWidth: 24
-                Layout.preferredHeight: 24
-                radius: height / 2
-                color: Theme.primary
-                visible: todayList.length > 0
+                Repeater {
+                    model: weekDates
 
-                StyledText {
-                    id: countBadge
-                    anchors.centerIn: parent
-                    text: todayList.length.toString()
-                    font.pixelSize: Theme.fontSizeSmall
-                    font.weight: Font.Bold
-                    color: Theme.onPrimary
-                }
-            }
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 52
+                        radius: height / 2
+                        color: root.isSameDay(modelData, root.selectedDate) ? Theme.primary : Theme.surfaceContainerHigh
+                        border.color: root.isSameDay(modelData, root.selectedDate) ? Theme.primary : "transparent"
+                        border.width: root.isSameDay(modelData, root.selectedDate) ? 1 : 0
+                        scale: root.isSameDay(modelData, root.selectedDate) ? 1.0 : 0.96
+                        transformOrigin: Item.Center
 
-            Item { Layout.fillWidth: true }
-
-            // Toggle buttons
-            Row {
-                spacing: 0
-
-                Rectangle {
-                    width: watchlistBtnText.width + Theme.spacingL
-                    height: 26
-                    radius: height / 2
-                    color: !root.showAll ? Theme.primary : (watchlistMouseArea.containsMouse ? Theme.surfaceContainerHigh : "transparent")
-                    scale: !root.showAll ? 1.0 : 0.96
-                    transformOrigin: Item.Center
-
-                    Behavior on scale {
-                        NumberAnimation {
-                            duration: 180
-                            easing.type: Easing.OutBack
+                        Behavior on scale {
+                            NumberAnimation {
+                                duration: 180
+                                easing.type: Easing.OutBack
+                            }
                         }
-                    }
 
-                    StyledText {
-                        id: watchlistBtnText
-                        anchors.centerIn: parent
-                        text: "Today"
-                        font.pixelSize: Theme.fontSizeSmall
-                        font.weight: !root.showAll ? Font.Bold : Font.Medium
-                        color: !root.showAll ? Theme.onPrimary : Theme.surfaceVariantText
-                    }
+                        Column {
+                            anchors.centerIn: parent
+                            width: parent.width
+                            spacing: 2
 
-                    MouseArea {
-                        id: watchlistMouseArea
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
-                        hoverEnabled: true
-                        onClicked: root.showAll = false
-                    }
-                }
+                            StyledText {
+                                width: parent.width
+                                text: Qt.formatDate(modelData, "ddd")
+                                font.pixelSize: Theme.fontSizeSmall
+                                horizontalAlignment: Text.AlignHCenter
+                                color: root.isSameDay(modelData, root.selectedDate) ? Theme.onPrimary : Theme.surfaceText
+                            }
 
-                Rectangle {
-                    width: allBtnText.width + Theme.spacingL
-                    height: 26
-                    radius: height / 2
-                    color: root.showAll ? Theme.primary : (allMouseArea.containsMouse ? Theme.surfaceContainerHigh : "transparent")
-                    scale: root.showAll ? 1.0 : 0.96
-                    transformOrigin: Item.Center
-
-                    Behavior on scale {
-                        NumberAnimation {
-                            duration: 180
-                            easing.type: Easing.OutBack
+                            StyledText {
+                                width: parent.width
+                                text: Qt.formatDate(modelData, "d")
+                                font.pixelSize: Theme.fontSizeMedium
+                                font.weight: Font.Medium
+                                horizontalAlignment: Text.AlignHCenter
+                                color: root.isSameDay(modelData, root.selectedDate) ? Theme.onPrimary : Theme.surfaceText
+                            }
                         }
-                    }
 
-                    StyledText {
-                        id: allBtnText
-                        anchors.centerIn: parent
-                        text: "All"
-                        font.pixelSize: Theme.fontSizeSmall
-                        font.weight: root.showAll ? Font.Bold : Font.Medium
-                        color: root.showAll ? Theme.onPrimary : Theme.surfaceVariantText
-                    }
-
-                    MouseArea {
-                        id: allMouseArea
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
-                        hoverEnabled: true
-                        onClicked: root.showAll = true
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: root.selectedDate = modelData
+                        }
                     }
                 }
             }
@@ -140,14 +142,15 @@ Item {
             Rectangle {
                 Layout.preferredWidth: 28
                 Layout.preferredHeight: 28
+                Layout.alignment: Qt.AlignVCenter
                 radius: height / 2
-                color: todayRefreshMouseArea.containsMouse ? Theme.primaryContainer : Theme.surfaceContainerHigh
+                color: refreshMouseArea.containsMouse ? Theme.primaryContainer : Theme.surfaceContainerHigh
 
                 DankIcon {
                     anchors.centerIn: parent
                     name: "refresh"
                     size: 16
-                    color: todayRefreshMouseArea.containsMouse ? Theme.onPrimaryContainer : Theme.surfaceVariantText
+                    color: refreshMouseArea.containsMouse ? Theme.onPrimaryContainer : Theme.surfaceVariantText
 
                     RotationAnimation on rotation {
                         running: root.isLoading
@@ -159,7 +162,7 @@ Item {
                 }
 
                 MouseArea {
-                    id: todayRefreshMouseArea
+                    id: refreshMouseArea
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
@@ -169,6 +172,10 @@ Item {
                         }
                     }
                 }
+
+                ToolTip.visible: refreshMouseArea.containsMouse
+                ToolTip.text: "Refresh anime list"
+                ToolTip.delay: 500
             }
         }
 
@@ -180,7 +187,7 @@ Item {
             // Loading State
             LoadingState {
                 anchors.centerIn: parent
-                visible: root.isLoading && todayList.length === 0
+                visible: root.isLoading && filteredList.length === 0
             }
 
             // No Token State
@@ -205,11 +212,11 @@ Item {
                 }
             }
 
-            // Empty State - no anime today
+            // Empty State
             Column {
                 anchors.centerIn: parent
                 spacing: Theme.spacingM
-                visible: !root.isLoading && todayList.length === 0 && Services.AnimeScheduleService.apiToken !== "" && !Services.AnimeScheduleService.hasError
+                visible: !root.isLoading && filteredList.length === 0 && Services.AnimeScheduleService.apiToken !== "" && !Services.AnimeScheduleService.hasError
 
                 DankIcon {
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -220,39 +227,42 @@ Item {
 
                 StyledText {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    text: "No anime in your list today"
+                    text: "No anime in your list for " + Qt.formatDate(root.selectedDate, "ddd, MMM d")
                     font.pixelSize: Theme.fontSizeMedium
                     font.weight: Font.Medium
                     color: Theme.surfaceText
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.WordWrap
+                    width: Math.min(implicitWidth, parent.parent.width - Theme.spacingXL * 2)
                 }
 
                 StyledText {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    text: "Add anime from Season tab"
+                    text: "Pick another day in the week strip"
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.surfaceVariantText
                 }
             }
 
-            // Today's Anime List
+            // Watchlist Anime List
             ListView {
-                id: todayListView
+                id: watchlistListView
                 anchors.fill: parent
-                visible: todayList.length > 0
+                visible: filteredList.length > 0
                 clip: true
                 spacing: Theme.spacingXS
 
-                model: todayList
+                model: filteredList
 
                 delegate: AnimeListItem {
-                    width: todayListView.width
+                    width: watchlistListView.width
                     anime: modelData
-                    title: modelData.english ||modelData.title || modelData.route || "Unknown"
+                    title: modelData.english || modelData.romaji || modelData.title || modelData.route || "Unknown"
                     episodeNumber: modelData.episodeNumber ? "Episode " + modelData.episodeNumber : ""
                     airTime: {
                         const date = Services.AnimeScheduleService.parseDate(modelData.episodeDate);
                         if (!date) return "";
-                        return "Today at " + Services.AnimeScheduleService.formatTime(date);
+                        return Services.AnimeScheduleService.formatDate(date) + " at " + Services.AnimeScheduleService.formatTime(date);
                     }
                     timeUntil: {
                         const date = Services.AnimeScheduleService.parseDate(modelData.episodeDate);
