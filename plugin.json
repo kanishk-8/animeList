@@ -4,7 +4,7 @@
     "description": "A QuickShell plugin for DankMaterialShell that tracks anime episode releases and sends notifications when your favorite shows air.",
     "version": "1.0.0",
     "author": "Kanishk Kumar",
-    "icon": "widgets",
+    "icon": "udon",
     "type": "widget",
     "component": "./Widget.qml",
     "settings": "./Settings.qml",

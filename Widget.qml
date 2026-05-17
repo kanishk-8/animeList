@@ -102,9 +102,9 @@ PluginComponent {
             spacing: Theme.spacingS
 
             DankIcon {
-                name: "calendar_month"
+                name: "udon"
                 size: Theme.iconSize
-                color: Theme.primary
+                color: Theme.surfaceText
                 anchors.verticalCenter: parent.verticalCenter
             }
 
