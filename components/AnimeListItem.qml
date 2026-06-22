@@ -128,7 +128,7 @@ Rectangle {
 
             DankIcon {
                 anchors.centerIn: parent
-                name: root.isInWatchlist ? "favorite" : "add"
+                name: root.isInWatchlist ? "favorite" : "add_circle"
                 size: 20
                 color: root.isInWatchlist ? Theme.primary : Theme.surfaceVariantText
             }
@@ -153,7 +153,7 @@ Rectangle {
                 Layout.preferredWidth: 76
                 Layout.preferredHeight: 24
                 radius: height / 2
-                color: Theme.surfaceContainerHigh
+                color: Theme.primaryContainer
                 visible: root.timeUntil !== "" && root.timeUntil !== "Aired"
 
                 StyledText {
@@ -162,7 +162,7 @@ Rectangle {
                     text: root.timeUntil
                     font.pixelSize: Theme.fontSizeSmall
                     font.weight: Font.Medium
-                    color: Theme.primary
+                    color: Theme.onPrimaryContainer
                 }
             }
 
