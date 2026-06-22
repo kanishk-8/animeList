@@ -13,16 +13,29 @@ Item {
     property var animeList: Services.AnimeScheduleService.timetable
     property var selectedDate: new Date()
     property var weekDates: []
+    property string searchText: ""
+    property string viewMode: "calendar" // "calendar" or "all"
 
-    // Filtered list based on selected day
+    // Filtered list based on selected day and search text
     property var filteredList: {
         let list = animeList || [];
-        if (!selectedDate) return list;
 
-        list = list.filter(anime => {
-            const airDate = Services.AnimeScheduleService.parseDate(anime.episodeDate);
-            return airDate && root.isSameDay(airDate, selectedDate);
-        });
+        // Filter by day first, if in calendar mode
+        if (root.viewMode === "calendar" && selectedDate) {
+            list = list.filter(anime => {
+                const airDate = Services.AnimeScheduleService.parseDate(anime.episodeDate);
+                return airDate && root.isSameDay(airDate, selectedDate);
+            });
+        }
+
+        // Filter by search text
+        if (searchText.length > 0) {
+            const searchLower = searchText.toLowerCase();
+            list = list.filter(anime => {
+                const title = (anime.english || anime.romaji || anime.title || anime.route || "").toLowerCase();
+                return title.includes(searchLower);
+            });
+        }
 
         return list;
     }
@@ -61,107 +74,70 @@ Item {
         anchors.margins: Theme.spacingM
         spacing: Theme.spacingM
 
-        // Week Calendar Strip + Refresh
+        // Week Calendar Strip (Visible only in "calendar" mode)
         RowLayout {
             Layout.fillWidth: true
             Layout.preferredHeight: 52
-            spacing: Theme.spacingS
+            spacing: Theme.spacingXS
+            visible: root.viewMode === "calendar"
 
-            RowLayout {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 52
-                spacing: Theme.spacingXS
+            Repeater {
+                model: weekDates
 
-                Repeater {
-                    model: weekDates
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 52
+                    radius: root.isSameDay(modelData, root.selectedDate) ? height / 2 : 10
+                    color: root.isSameDay(modelData, root.selectedDate) ? Theme.primary : Theme.surfaceContainerHigh
+                    border.color: root.isSameDay(modelData, root.selectedDate) ? Theme.primary : "transparent"
+                    border.width: root.isSameDay(modelData, root.selectedDate) ? 1 : 0
+                    scale: root.isSameDay(modelData, root.selectedDate) ? 1.0 : 0.96
+                    transformOrigin: Item.Center
 
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 52
-                        radius: height / 2
-                        color: root.isSameDay(modelData, root.selectedDate) ? Theme.primary : Theme.surfaceContainerHigh
-                        border.color: root.isSameDay(modelData, root.selectedDate) ? Theme.primary : "transparent"
-                        border.width: root.isSameDay(modelData, root.selectedDate) ? 1 : 0
-                        scale: root.isSameDay(modelData, root.selectedDate) ? 1.0 : 0.96
-                        transformOrigin: Item.Center
+                    Behavior on radius {
+                        NumberAnimation { duration: 160 }
+                    }
 
-                        Behavior on scale {
-                            NumberAnimation {
-                                duration: 180
-                                easing.type: Easing.OutBack
-                            }
+                    Behavior on color {
+                        ColorAnimation { duration: 160 }
+                    }
+
+                    Behavior on scale {
+                        NumberAnimation {
+                            duration: 180
+                            easing.type: Easing.OutBack
                         }
+                    }
 
-                        Column {
-                            anchors.centerIn: parent
+                    Column {
+                        anchors.centerIn: parent
+                        width: parent.width
+                        spacing: 2
+
+                        StyledText {
                             width: parent.width
-                            spacing: 2
-
-                            StyledText {
-                                width: parent.width
-                                text: Qt.formatDate(modelData, "ddd")
-                                font.pixelSize: Theme.fontSizeSmall
-                                horizontalAlignment: Text.AlignHCenter
-                                color: root.isSameDay(modelData, root.selectedDate) ? Theme.onPrimary : Theme.surfaceText
-                            }
-
-                            StyledText {
-                                width: parent.width
-                                text: Qt.formatDate(modelData, "d")
-                                font.pixelSize: Theme.fontSizeMedium
-                                font.weight: Font.Medium
-                                horizontalAlignment: Text.AlignHCenter
-                                color: root.isSameDay(modelData, root.selectedDate) ? Theme.onPrimary : Theme.surfaceText
-                            }
+                            text: Qt.formatDate(modelData, "ddd")
+                            font.pixelSize: Theme.fontSizeSmall
+                            horizontalAlignment: Text.AlignHCenter
+                            color: root.isSameDay(modelData, root.selectedDate) ? Theme.onPrimary : Theme.surfaceText
                         }
 
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: root.selectedDate = modelData
+                        StyledText {
+                            width: parent.width
+                            text: Qt.formatDate(modelData, "d")
+                            font.pixelSize: Theme.fontSizeMedium
+                            font.weight: Font.Medium
+                            horizontalAlignment: Text.AlignHCenter
+                            color: root.isSameDay(modelData, root.selectedDate) ? Theme.onPrimary : Theme.surfaceText
                         }
                     }
-                }
-            }
 
-            // Refresh Button (compact)
-            Rectangle {
-                Layout.preferredWidth: 28
-                Layout.preferredHeight: 28
-                Layout.alignment: Qt.AlignVCenter
-                radius: height / 2
-                color: refreshMouseArea.containsMouse ? Theme.primaryContainer : Theme.surfaceContainerHigh
-
-                DankIcon {
-                    anchors.centerIn: parent
-                    name: "refresh"
-                    size: 16
-                    color: refreshMouseArea.containsMouse ? Theme.onPrimaryContainer : Theme.surfaceVariantText
-
-                    RotationAnimation on rotation {
-                        running: root.isLoading
-                        from: 0
-                        to: 360
-                        duration: 1000
-                        loops: Animation.Infinite
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: root.selectedDate = modelData
                     }
                 }
-
-                MouseArea {
-                    id: refreshMouseArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        if (!root.isLoading) {
-                            Services.AnimeScheduleService.forceRefresh();
-                        }
-                    }
-                }
-
-                ToolTip.visible: refreshMouseArea.containsMouse
-                ToolTip.text: "Refresh anime list"
-                ToolTip.delay: 500
             }
         }
 
@@ -180,8 +156,14 @@ Item {
             EmptyState {
                 anchors.centerIn: parent
                 visible: !root.isLoading && filteredList.length === 0 && Services.AnimeScheduleService.apiToken !== ""
-                message: "No anime for " + Qt.formatDate(root.selectedDate, "ddd, MMM d")
-                details: "Pick another day in the week strip"
+                message: root.searchText.length > 0 
+                         ? "No search results found" 
+                         : (root.viewMode === "calendar" 
+                            ? "No anime for " + Qt.formatDate(root.selectedDate, "ddd, MMM d")
+                            : "No anime available")
+                details: root.searchText.length > 0 
+                         ? "Try a different search query" 
+                         : (root.viewMode === "calendar" ? "Pick another day in the week strip" : "")
             }
 
             // No Token State
@@ -301,7 +283,6 @@ Item {
                         }
                         return "";
                     }
-                    isInWatchlist: modelData.route && Services.AnimeScheduleService.watchlist.indexOf(modelData.route) !== -1
                     onWatchlistToggled: function(anime) {
                         Services.AnimeScheduleService.toggleWatchlist(anime);
                     }

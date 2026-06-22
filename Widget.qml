@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import qs.Common
 import qs.Widgets
 import qs.Modules.Plugins
@@ -16,6 +17,8 @@ PluginComponent {
     property int todayCount: Services.AnimeScheduleService.watchlistTodayCount
     property bool isLoading: Services.AnimeScheduleService.isLoading
     property string barMode: pluginData.barIndicatorMode || "icon_count"
+    property string searchText: ""
+    property string viewMode: "calendar" // Global view mode: "calendar" or "all"
 
     // Get next airing time from watchlist
     property string nextAiringTime: {
@@ -142,72 +145,73 @@ PluginComponent {
             }
         }
     }
-
     popoutContent: Component {
         PopoutComponent {
             id: popoutColumn
 
-            headerText: "Anime List"
+            headerText: ""
             detailsText: ""
-            showCloseButton: true
+            showCloseButton: false
 
             Item {
                 width: parent.width
-                height: Theme.spacingS
-            }
+                implicitHeight: root.popoutHeight
 
-            Item {
-                width: parent.width
-                implicitHeight: root.popoutHeight - popoutColumn.headerHeight - popoutColumn.detailsHeight - Theme.spacingXL
-
-                Column {
+                ColumnLayout {
                     anchors.fill: parent
+                    anchors.margins: Theme.spacingM
                     spacing: 0
 
+                    // Header Row (Tabs + Search Bar)
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 40
+                        Layout.topMargin: Theme.spacingS
+                        Layout.bottomMargin: Theme.spacingS
+                        spacing: Theme.spacingM
 
-
-                    //Tab Bar
-                    Item {
-                        width: parent.width
-                        height: 40
-
+                        // Tabs
                         Row {
-                            anchors.fill: parent
-                            anchors.leftMargin: Theme.spacingS
-                            anchors.rightMargin: Theme.spacingS
-                            height: parent.height
+                            Layout.fillWidth: false
+                            Layout.preferredHeight: parent.height
                             spacing: Theme.spacingS
 
                             Repeater {
                                 id: tabRepeater
-                                model: ["MyList", "Season", "Search"]
+                                model: ["MyList", "Season"]
 
-                                Rectangle{
+                                Rectangle {
                                     id: tabPill
-                                    width: (parent.width - Theme.spacingS * (tabRepeater.model.length - 1)) / tabRepeater.model.length
+                                    width: 110
                                     height: parent.height
-                                    radius: height / 2
+                                    radius: tabBar.currentIndex === index ? height / 2 : 10
                                     color: tabBar.currentIndex === index ? Theme.primary : Theme.surfaceContainerHigh
                                     scale: tabBar.currentIndex === index ? 1.0 : 0.96
                                     transformOrigin: Item.Center
 
+                                    Behavior on radius {
+                                        NumberAnimation { duration: 160 }
+                                    }
                                     Behavior on scale {
                                         NumberAnimation {
                                             duration: 180
                                             easing.type: Easing.OutBack
                                         }
                                     }
-
                                     Behavior on color {
                                         ColorAnimation { duration: 160 }
                                     }
 
                                     StyledText {
                                         anchors.centerIn: parent
-                                        text: modelData
+                                        text: modelData === "MyList" ? "My List" : modelData
                                         font.pixelSize: Theme.fontSizeMedium
                                         font.weight: tabBar.currentIndex === index ? Font.Bold : Font.Medium
                                         color: tabBar.currentIndex === index ? Theme.onPrimary : Theme.surfaceText
+
+                                        Behavior on color {
+                                            ColorAnimation { duration: 160 }
+                                        }
                                     }
 
                                     MouseArea {
@@ -218,32 +222,116 @@ PluginComponent {
                                 }
                             }
                         }
+
+                        // Search bar
+                        TextField {
+                            id: globalSearchField
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 36
+                            Layout.alignment: Qt.AlignVCenter
+
+                            placeholderText: ""
+                            verticalAlignment: TextInput.AlignVCenter
+                            leftPadding: Theme.spacingM
+                            rightPadding: Theme.spacingM
+
+                            color: Theme.surfaceText
+                            font.pixelSize: Theme.fontSizeMedium
+
+                            focus: true
+                            Component.onCompleted: forceActiveFocus()
+
+                            onTextChanged: root.searchText = text
+
+                            StyledText {
+                                anchors.left: parent.left
+                                anchors.leftMargin: Theme.spacingM
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: "Search anime..."
+                                font.pixelSize: Theme.fontSizeMedium
+                                color: Theme.surfaceVariantText
+                                visible: parent.text === ""
+                            }
+
+                            background: Rectangle {
+                                radius: height / 2
+                                color: Theme.surfaceContainerHigh
+                                border.width: 0
+                            }
+                        }
+
+                        // View Mode Toggle Button
+                        Rectangle {
+                            Layout.preferredWidth: 32
+                            Layout.preferredHeight: 32
+                            Layout.alignment: Qt.AlignVCenter
+                            radius: height / 2
+                            color: viewModeMouseArea.containsMouse ? Theme.surfaceContainerHighest : "transparent"
+
+                            DankIcon {
+                                anchors.centerIn: parent
+                                name: root.viewMode === "calendar" ? "today" : "view_list"
+                                size: 20
+                                color: Theme.surfaceText
+                            }
+
+                            MouseArea {
+                                id: viewModeMouseArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: root.viewMode = (root.viewMode === "calendar" ? "all" : "calendar")
+                            }
+
+                            ToolTip.visible: viewModeMouseArea.containsMouse
+                            ToolTip.text: root.viewMode === "calendar" ? "Switch to list view" : "Switch to calendar view"
+                            ToolTip.delay: 500
+                        }
+
+                        // Reload Button (moved to top next to search bar)
+                        Rectangle {
+                            Layout.preferredWidth: 32
+                            Layout.preferredHeight: 32
+                            Layout.alignment: Qt.AlignVCenter
+                            radius: height / 2
+                            color: refreshMouseArea.containsMouse ? Theme.surfaceContainerHighest : "transparent"
+
+                            DankIcon {
+                                anchors.centerIn: parent
+                                name: "refresh"
+                                size: 20
+                                color: Theme.surfaceText
+                            }
+
+                            MouseArea {
+                                id: refreshMouseArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: Services.AnimeScheduleService.forceRefresh()
+                            }
+
+                            ToolTip.visible: refreshMouseArea.containsMouse
+                            ToolTip.text: "Refresh anime list"
+                            ToolTip.delay: 500
+                        }
                     }
 
-                    Item {
-                        width: parent.width
-                        height: Theme.spacingS
-                    }
-
-                    Item {
-                        width: parent.width
-                        height: Theme.spacingS
-                    }
-
-                    //Tab Content
+                    // Tab Content
                     StackLayout {
                         id: tabBar
-                        width: parent.width
-                        height: parent.height - 41
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
                         currentIndex: 0
 
                         AnimeCalendarComponents.TodayTab {
+                            searchText: root.searchText
+                            viewMode: root.viewMode
                         }
 
                         AnimeCalendarComponents.SeasonTab {
-                        }
-
-                        AnimeCalendarComponents.SearchTab {
+                            searchText: root.searchText
+                            viewMode: root.viewMode
                         }
                     }
                 }

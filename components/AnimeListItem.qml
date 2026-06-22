@@ -2,12 +2,13 @@ import QtQuick
 import QtQuick.Layouts
 import qs.Common
 import qs.Widgets
+import "../services" as Services
 
 Rectangle {
     id: root
 
     property var anime: ({})
-    property string title: anime.english || anime.romaji ||anime.title || anime.route || "Unknown"
+    property string title: anime.english || anime.romaji || anime.title || anime.route || "Unknown"
     property string episodeNumber: anime.episodeNumber ? "Ep " + anime.episodeNumber : ""
     property string airTime: ""
     property string timeUntil: ""
@@ -18,11 +19,30 @@ Rectangle {
     signal watchlistToggled(var anime)
 
     width: parent ? parent.width : 200
-    height: 72
+    height: 96
     color: mouseArea.containsMouse ? Theme.surfaceContainerHigh : "transparent"
     radius: Theme.cornerRadius
 
-    property real infoWidth: Math.max(0, root.width - (Theme.spacingS * 2 + Theme.spacingM * 3 + 48 + 32 + 80))
+    property real infoWidth: Math.max(0, root.width - (Theme.spacingS * 2 + Theme.spacingM * 3 + 72 + 32 + 80))
+
+    Connections {
+        target: Services.AnimeScheduleService
+        function onWatchlistModified() {
+            root.updateWatchlistStatus();
+        }
+    }
+
+    onAnimeChanged: updateWatchlistStatus()
+    Component.onCompleted: updateWatchlistStatus()
+
+    function updateWatchlistStatus() {
+        if (root.anime && root.anime.route) {
+            var wl = Services.AnimeScheduleService.watchlist;
+            root.isInWatchlist = wl.indexOf(root.anime.route) !== -1;
+        } else {
+            root.isInWatchlist = false;
+        }
+    }
 
     RowLayout {
         anchors.fill: parent
@@ -31,8 +51,8 @@ Rectangle {
 
         // Anime thumbnail
         Rectangle {
-            Layout.preferredWidth: 56
-            Layout.preferredHeight: 64
+            Layout.preferredWidth: 72
+            Layout.preferredHeight: 80
             radius: Theme.cornerRadius
             color: Theme.surfaceContainerHighest
             clip: true
@@ -108,7 +128,7 @@ Rectangle {
 
             DankIcon {
                 anchors.centerIn: parent
-                name: root.isInWatchlist ? "check_circle" : "star_border"
+                name: root.isInWatchlist ? "favorite" : "add"
                 size: 20
                 color: root.isInWatchlist ? Theme.primary : Theme.surfaceVariantText
             }
@@ -124,17 +144,17 @@ Rectangle {
 
         // Time until column
         ColumnLayout {
-            Layout.preferredWidth: 60
+            Layout.preferredWidth: 80
             Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
             spacing: 2
 
             Rectangle {
                 Layout.alignment: Qt.AlignRight
-                Layout.preferredWidth: timeUntilText.width + Theme.spacingL
+                Layout.preferredWidth: 76
                 Layout.preferredHeight: 24
                 radius: height / 2
-                color: root.timeUntil === "Aired" ? Theme.surfaceContainerHighest : Theme.primary
-                visible: root.timeUntil !== ""
+                color: Theme.surfaceContainerHigh
+                visible: root.timeUntil !== "" && root.timeUntil !== "Aired"
 
                 StyledText {
                     id: timeUntilText
@@ -142,7 +162,24 @@ Rectangle {
                     text: root.timeUntil
                     font.pixelSize: Theme.fontSizeSmall
                     font.weight: Font.Medium
-                    color: root.timeUntil === "Aired" ? Theme.surfaceText : Theme.onPrimary
+                    color: Theme.primary
+                }
+            }
+
+            Rectangle {
+                Layout.alignment: Qt.AlignRight
+                Layout.preferredWidth: 76
+                Layout.preferredHeight: 24
+                radius: height / 2
+                color: Theme.surfaceContainerHigh
+                visible: root.timeUntil === "Aired"
+
+                StyledText {
+                    anchors.centerIn: parent
+                    text: "Aired"
+                    font.pixelSize: Theme.fontSizeSmall
+                    font.weight: Font.Medium
+                    color: Theme.surfaceVariantText
                 }
             }
         }
