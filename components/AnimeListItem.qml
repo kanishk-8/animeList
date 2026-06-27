@@ -153,7 +153,7 @@ Rectangle {
                 Layout.preferredWidth: 76
                 Layout.preferredHeight: 24
                 radius: height / 2
-                color: Theme.primaryContainer
+                color: Theme.primary
                 visible: root.timeUntil !== "" && root.timeUntil !== "Aired"
 
                 StyledText {
@@ -162,7 +162,7 @@ Rectangle {
                     text: root.timeUntil
                     font.pixelSize: Theme.fontSizeSmall
                     font.weight: Font.Medium
-                    color: Theme.onPrimaryContainer
+                    color: Theme.onPrimary
                 }
             }
 
